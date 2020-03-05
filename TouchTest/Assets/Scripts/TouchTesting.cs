@@ -9,10 +9,53 @@ public class TouchTesting : MonoBehaviour, ISingleTouchObserver {
 
 #region Fields
 
+[SerializeField]
+private Camera m_Camera;
+
+[System.NonSerialized]
+private Renderer m_Renderer;
+
+[System.NonSerialized]
+private Transform m_Transform;
+
+[System.NonSerialized]
 private Touch m_Current;
+
+[System.NonSerialized]
 private Vector2 m_CurrentLastPos;
 
+
 #endregion
+
+
+#region Properties
+
+/*
+// why does this not work?
+public Camera Camera {
+	get { return m_Camera = m_Camera ?? CameraUtils.FindRootCamera(this.Transform); }
+}
+*/
+
+public Camera Camera {
+	get { 
+		if (m_Camera == null) {
+			m_Camera = CameraUtils.FindRootCamera(this.Transform);
+		}
+		return m_Camera;
+	}
+}
+
+public Renderer Renderer {
+	get { return m_Renderer = m_Renderer ?? GetComponent<Renderer>(); }
+}
+
+public Transform Transform {
+	get { return m_Transform = m_Transform ?? GetComponent<Transform>(); }
+}
+
+#endregion
+
 
 #region Monobehavior methods
 
@@ -36,8 +79,12 @@ public void OnDisable() {
 #region Touch methods
 
 	public bool OnTouchBegan(Touch touch) {
-		if (m_Current == null)
+		if (!HitTest(touch))
 		{
+			return false;
+		}
+		if (m_Current == null)
+		{			
 			Debug.Log("Touch Began");
 			m_Current = touch;
 			m_CurrentLastPos = m_Current.Position;
@@ -72,5 +119,25 @@ public void OnDisable() {
 
 #endregion
 
+
+#region Hit test
+
+/*
+	private bool HitTest(Touch touch) {
+		var bounds = m_Renderer.bounds;
+		bounds.extents += Vector3.forward;
+		return bounds.Contains(CameraUtils.TouchToWorldPoint(touch, m_Transform, m_Camera));
+	}
+	*/
+	
+	private bool HitTest(Touch touch) {		
+		var bounds = this.Renderer.bounds;
+		bounds.extents += Vector3.forward;
+		return bounds.Contains(CameraUtils.TouchToWorldPoint(touch, this.Transform, this.Camera));
+	}
+
+
+
+#endregion
 
 }
