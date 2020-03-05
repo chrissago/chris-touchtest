@@ -19,10 +19,7 @@ private Renderer m_Renderer;
 private Transform m_Transform;
 
 [System.NonSerialized]
-private Touch m_Current;
-
-[System.NonSerialized]
-private Vector2 m_CurrentLastPos;
+private List<Touch> m_Touches = new List<Touch>();
 
 
 #endregion
@@ -57,78 +54,21 @@ public Transform Transform {
 #endregion
 
 
-#region Monobehavior methods
+#region Methods
 
-public void OnEnable() {
-	if (TouchDispatcher.Instance == null) {
-		return;
-	}
-	TouchDispatcher.Instance.Add(this, 0, true);
-}
-
-public void OnDisable() {
-	if (TouchDispatcher.Instance == null) {
-		return;
-	}
-	TouchDispatcher.Instance.Remove(this);
-}
-
-#endregion
-
-
-#region Touch methods
-
-	public bool OnTouchBegan(Touch touch) {
-		if (!HitTest(touch))
-		{
-			return false;
+	public void OnEnable() {
+		if (TouchDispatcher.Instance == null) {
+			return;
 		}
-		if (m_Current == null)
-		{			
-			Debug.Log("Touch Began");
-			m_Current = touch;
-			m_CurrentLastPos = m_Current.Position;
-			return true;
+		TouchDispatcher.Instance.Add(this, 0, true);
+	}
+
+	public void OnDisable() {
+		if (TouchDispatcher.Instance == null) {
+			return;
 		}
-		return false;
+		TouchDispatcher.Instance.Remove(this);
 	}
-
-	public void OnTouchMoved(Touch touch) {
-		if (touch == m_Current && touch.Position != m_CurrentLastPos)
-		{
-			Debug.Log(touch.Position - m_CurrentLastPos);
-			m_CurrentLastPos = m_Current.Position;
-		}
-	}
-
-	public void OnTouchEnded(Touch touch) {		
-		Debug.Log("Touch ended");
-		if (touch == m_Current)
-		{
-			m_Current = null;
-		}
-	}
-
-	public void OnTouchCancelled(Touch touch) {	
-		Debug.Log("Touch cancelled");
-		if (touch == m_Current)
-		{
-			m_Current = null;
-		}
-	}
-
-#endregion
-
-
-#region Hit test
-
-/*
-	private bool HitTest(Touch touch) {
-		var bounds = m_Renderer.bounds;
-		bounds.extents += Vector3.forward;
-		return bounds.Contains(CameraUtils.TouchToWorldPoint(touch, m_Transform, m_Camera));
-	}
-	*/
 	
 	private bool HitTest(Touch touch) {		
 		var bounds = this.Renderer.bounds;
@@ -136,8 +76,34 @@ public void OnDisable() {
 		return bounds.Contains(CameraUtils.TouchToWorldPoint(touch, this.Transform, this.Camera));
 	}
 
+#endregion
 
+
+#region ISingleTouchObserver
+
+	public bool OnTouchBegan(Touch touch) {
+		if (!HitTest(touch))
+		{
+			return false;
+		}
+		m_Touches.Add(touch);
+		Debug.Log("Touch began. Num touches now " + m_Touches.Count);
+		return true;
+	}
+
+	public void OnTouchMoved(Touch touch) {		
+	}
+
+	public void OnTouchEnded(Touch touch) {		
+		Debug.Log("Touch ended");
+		m_Touches.Remove(touch);
+	}
+
+	public void OnTouchCancelled(Touch touch) {	
+		OnTouchEnded(touch);
+	}
 
 #endregion
+
 
 }
