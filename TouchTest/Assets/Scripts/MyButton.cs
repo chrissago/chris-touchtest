@@ -1,4 +1,4 @@
-﻿namespace TouchAreaExample {
+﻿namespace TestingTouches {
 	
     using SagoTouch;
     using UnityEngine;
