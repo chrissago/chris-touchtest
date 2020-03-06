@@ -19,6 +19,18 @@
 		#endregion
 
 
+		#region Monobehavior Methods
+
+		public void Start()
+		{
+			#if !ENABLE_BUTTONS
+			this.gameObject.SetActive(false);
+			#endif
+		}
+
+		#endregion
+
+
 		#region Methods
 		public void OnTap() {
 			if (m_TouchArea == null)		
